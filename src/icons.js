@@ -1,4 +1,4 @@
-/* skillbased — hand-drawn pixel-art game icons (rendered as crisp SVG, sized by font-size). */
+/* skillbased - hand-drawn pixel-art game icons (rendered as crisp SVG, sized by font-size). */
 import { rowsToSVG } from './pixel.js';
 
 const C = {
@@ -10,7 +10,7 @@ const C = {
   w: '#7d8f85', // pale
 };
 
-// ⚡ reaction — lightning bolt
+// ⚡ reaction - lightning bolt
 const bolt = [
   '....vvvvv',
   '...vvvvv.',
@@ -26,7 +26,7 @@ const bolt = [
   'vvv......',
 ];
 
-// 🎯 aim — ring + ticks + center dot, generated
+// 🎯 aim - ring + ticks + center dot, generated
 const aim = (() => {
   const g = Array.from({ length: 11 }, () => Array(11).fill('.'));
   for (let y = 0; y < 11; y++) for (let x = 0; x < 11; x++) {
@@ -38,7 +38,7 @@ const aim = (() => {
   return g.map(r => r.join(''));
 })();
 
-// ⌨️ typing — keyboard
+// ⌨️ typing - keyboard
 const keyboard = [
   'ssssssssssssss',
   'ssssssssssssss',
@@ -50,7 +50,7 @@ const keyboard = [
   'ssssssssssssss',
 ];
 
-// 🧠 sequence — simon grid, some tiles lit
+// 🧠 sequence - simon grid, some tiles lit
 const sequence = [
   'vvv.sss.bbb',
   'vvv.sss.bbb',
@@ -65,7 +65,7 @@ const sequence = [
   'bbb.sss.vvv',
 ];
 
-// 🔢 numbers — pixel "123"
+// 🔢 numbers - pixel "123"
 const numbers = [
   '...........',
   '.v..bbb.vvv',
@@ -76,7 +76,7 @@ const numbers = [
   '...........',
 ];
 
-// ♞ chess — knight: ears, eye, muzzle with jaw notch, neck widening into the base
+// ♞ chess - knight: ears, eye, muzzle with jaw notch, neck widening into the base
 const knight = [
   '...l.l......',
   '..lllll.....',
@@ -109,7 +109,7 @@ export const GAME_ICONS = {
 const mix = (hex, t, to) => '#' + [1, 3, 5].map(i =>
   Math.round(parseInt(hex.slice(i, i + 2), 16) * (1 - t) + to * t).toString(16).padStart(2, '0')).join('');
 
-const medal = [ // Bronze — medal on ribbon straps
+const medal = [ // Bronze - medal on ribbon straps
   '.dd...dd.',
   '..dd.dd..',
   '..bbbbb..',
@@ -118,7 +118,7 @@ const medal = [ // Bronze — medal on ribbon straps
   '.bbbbbbd.',
   '..bbbdd..',
 ];
-const chevrons = [ // Silver — rank stripes
+const chevrons = [ // Silver - rank stripes
   'll.....ll',
   '.ll...ll.',
   '..ll.ll..',
@@ -137,7 +137,7 @@ const crown = [ // Gold
   'bbbbbbbbb',
   '.ddddddd.',
 ];
-const gem = [ // Platinum — hex cut
+const gem = [ // Platinum - hex cut
   '..bbbbb..',
   '.llbbbbb.',
   'llbbbbbbd',
@@ -145,7 +145,7 @@ const gem = [ // Platinum — hex cut
   '.bbbbbdd.',
   '..bbbbb..',
 ];
-const brilliant = [ // Diamond — brilliant cut
+const brilliant = [ // Diamond - brilliant cut
   '.lllllll.',
   'blbbbbblb',
   'bbbbbbbbb',

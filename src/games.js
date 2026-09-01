@@ -1,4 +1,4 @@
-/* skillbased — games: reaction, aim, typing, sequence, number memory */
+/* skillbased - games: reaction, aim, typing, sequence, number memory */
 import { state } from './state.js';
 import { showResult } from './ui.js';
 import { WORDS } from './words.js';
@@ -18,7 +18,7 @@ state.games.push({
       el.innerHTML = `
         <div class="game-stage">
           <div class="round-dots" id="rx-dots">${'<i></i>'.repeat(5)}</div>
-          <div class="arena reaction" id="rx-arena"><span>Click to start</span><span class="sub">5 rounds — react when it turns green</span></div>
+          <div class="arena reaction" id="rx-arena"><span>Click to start</span><span class="sub">5 rounds. React when it turns green</span></div>
           <p class="hint" id="rx-status">Sub-200ms average is elite.</p>
         </div>`;
       const arena = el.querySelector('#rx-arena');
@@ -39,7 +39,7 @@ state.games.push({
         }, 1000 + Math.random() * 3000));
       };
 
-      // pointerdown, not click — click fires on mouse-UP and adds your button-hold time
+      // pointerdown, not click - click fires on mouse-UP and adds your button-hold time
       arena.addEventListener('pointerdown', e => {
         if (phase === 'idle') { nextRound(); return; }
         if (phase === 'waiting') {
@@ -50,15 +50,15 @@ state.games.push({
           return;
         }
         if (phase === 'go' && goAt) {
-          // e.timeStamp is the hardware event time — cheaper than handler-run time
+          // e.timeStamp is the hardware event time - cheaper than handler-run time
           const ms = Math.max(1, Math.round(e.timeStamp - goAt));
           times.push(ms);
           round++;
           dots[round - 1]?.classList.add('done');
-          status.textContent = `Round ${round}: ${ms}ms — [${times.join(', ')}]`;
+          status.textContent = `Round ${round}: ${ms}ms [${times.join(', ')}]`;
           if (round >= 5) {
             const avg = Math.round(times.reduce((a, b) => a + b) / times.length);
-            if (avg < 90) { // beyond human range — anti-cheat void
+            if (avg < 90) { // beyond human range - anti-cheat void
               showResult(el, null, `${avg}ms average is beyond human range. Run voided by anti-cheat.`, start);
               return;
             }
@@ -118,7 +118,7 @@ state.games.push({
             }
             const pts = Math.max(5, Math.min(150, Math.round((1400 - avg) / 9)));
             finish(pts, `Aim avg ${avg}ms/target`);
-            showResult(el, pts, `${avg}ms per target — ${(total / 1000).toFixed(1)}s total`, start);
+            showResult(el, pts, `${avg}ms per target, ${(total / 1000).toFixed(1)}s total`, start);
           } else {
             status.textContent = `${hits} / ${TOTAL}`;
             fill.style.width = (100 * hits / TOTAL) + '%';
@@ -151,7 +151,7 @@ state.games.push({
 
       el.innerHTML = `
         <div class="game-stage">
-          ${ctx ? `<div class="invite-banner"><span class="vs">VS</span><span><b>${ctx.from}</b> challenged you — same words, same clock. Beat <b>${ctx.score} pts</b> (${ctx.wpm} wpm).</span></div>` : ''}
+          ${ctx ? `<div class="invite-banner"><span class="vs">VS</span><span><b>${ctx.from}</b> challenged you: same words, same clock. Beat <b>${ctx.score} pts</b> (${ctx.wpm} wpm).</span></div>` : ''}
           <div class="type-words" id="tw"></div>
           <input class="type-input" id="ti" placeholder="Start typing to begin…" autocomplete="off" spellcheck="false">
           <div class="type-meta"><span id="t-time">30s</span><span id="t-wpm">0 wpm</span><span id="t-acc">100% acc</span>${ctx ? `<span>target ${ctx.score} pts</span>` : ''}</div>
@@ -172,7 +172,7 @@ state.games.push({
         clearInterval(timer);
         const wpm = Math.round((chars / 5) / 0.5);
         const acc = correct + wrong === 0 ? 0 : correct / (correct + wrong);
-        if (wpm > 230) { // faster than the world record pace — voided
+        if (wpm > 230) { // faster than the world record pace - voided
           showResult(el, null, `${wpm} wpm is beyond human range. Run voided by anti-cheat.`, start);
           return;
         }
@@ -180,8 +180,8 @@ state.games.push({
         finish(pts, `Typing ${wpm} wpm`);
         let sub = `${wpm} wpm · ${Math.round(acc * 100)}% accuracy`;
         if (ctx) sub += pts > ctx.score
-          ? ` — you beat ${ctx.from}'s ${ctx.score} pts!`
-          : ` — ${ctx.from}'s ${ctx.score} pts stands.`;
+          ? `. You beat ${ctx.from}'s ${ctx.score} pts!`
+          : `. ${ctx.from}'s ${ctx.score} pts stands.`;
         showResult(el, pts, sub, start,
           linkBox('Challenge a friend to this exact run:', typingLink(seed, pts, wpm)));
       };
@@ -298,14 +298,14 @@ state.games.push({
         const num = Array.from({ length: digits }, (_, i) => Math.floor(Math.random() * (i ? 10 : 9)) + (i ? 0 : 1)).join('');
         el.innerHTML = `
           <div class="game-stage">
-            <p class="hint">Level ${level} — ${digits} digits</p>
+            <p class="hint">Level ${level}: ${digits} digits</p>
             <div class="big-num" id="nm-num">${num}</div>
             <p class="hint">Memorize it…</p>
           </div>`;
         later(() => {
           el.innerHTML = `
             <div class="game-stage">
-              <p class="hint">Level ${level} — what was the number?</p>
+              <p class="hint">Level ${level}. What was the number?</p>
               <input class="num-input" id="nm-in" inputmode="numeric" autocomplete="off">
               <button class="btn btn-primary" id="nm-go">Submit</button>
             </div>`;

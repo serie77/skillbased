@@ -1,8 +1,11 @@
-/* skillbased — UI: rendering, animations, modal, toasts, wallet button, FAQ */
-import { state, RANKS, BOTS, DAILIES, DAILY_MAX, dailyStats, weeklyStats, rankFor, nextRank, shortAddr, award, setWallet } from './state.js';
+/* skillbased - UI: rendering, animations, modal, toasts, wallet button, FAQ */
+import { state, RANKS, BOTS, DAILIES, DAILY_MAX, GAME_CAPS, dailyStats, weeklyStats, rankFor, nextRank, shortAddr, award, setWallet } from './state.js';
 import { GAME_ICONS, rankIcon } from './icons.js';
 
 const $ = id => document.getElementById(id);
+
+/* $SKILL contract address. Empty until launch. */
+export const CONTRACT_ADDRESS = '';
 
 /* ---------- toasts ---------- */
 export function toast(html) {
@@ -56,7 +59,7 @@ async function connectWallet() {
   const provider = eth();
   if (!provider) {
     window.open('https://metamask.io/', '_blank');
-    toast('No wallet found — install MetaMask (or any EVM wallet) to connect.');
+    toast('No wallet found. Install MetaMask (or any EVM wallet) to connect.');
     return;
   }
   let addr;
@@ -67,7 +70,7 @@ async function connectWallet() {
   localStorage.removeItem(LOGOUT_KEY);
   setWallet(addr.toLowerCase());
   renderAll();
-  toast(`Logged in as <b>${shortAddr()}</b> — scores will now save.`);
+  toast(`Logged in as <b>${shortAddr()}</b>. Scores will now save.`);
   try { await ensureChain(provider); }
   catch { toast('Switch your wallet to <b>Robinhood Chain</b> to receive prizes.'); }
 }
@@ -76,7 +79,7 @@ function disconnectWallet() {
   localStorage.setItem(LOGOUT_KEY, '1');
   setWallet(null);
   renderAll();
-  toast('Logged out — scores no longer saving.');
+  toast('Logged out. Scores are no longer saving.');
 }
 
 export function tryAutoConnect() {
@@ -103,7 +106,7 @@ export function renderAll() {
   countUp($('stat-points'), state.points);
   $('nav-rank-dot').style.background = rank.color;
   $('nav-rank-dot').style.color = rank.color;
-  $('stat-rank').textContent = state.wallet ? rank.name : '—';
+  $('stat-rank').textContent = state.wallet ? rank.name : '–';
   $('stat-rank').style.color = state.wallet ? rank.color : '';
 
   const pill = $('nav-points');
@@ -167,7 +170,7 @@ function renderLeaderboard() {
 
   $('lb-list').innerHTML = rows.slice(0, 8).map((r, i) => {
     const rank = rankFor(r.pts);
-    return `<li class="lb-row${r.you ? ' is-you' : ''}"${r.you ? '' : ' title="Mock ranking — seeded until enough players are climbing the board"'} style="animation-delay:${i * 60}ms">
+    return `<li class="lb-row${r.you ? ' is-you' : ''}"${r.you ? '' : ' title="Mock ranking, seeded until enough players are climbing the board"'} style="animation-delay:${i * 60}ms">
       <span class="lb-pos">#${i + 1}</span>
       <span class="lb-name">${r.name}${r.you ? ' (you)' : ''}</span>
       <span class="lb-rankicon" data-rank="${rank.name}">${rankIcon(rank)}</span>
@@ -177,15 +180,15 @@ function renderLeaderboard() {
 
   $('lb-you').textContent = !state.wallet
     ? 'Connect your wallet to join the board and save your scores.'
-    : youPos && youPos <= 8 ? "You're on the board — keep climbing."
-    : `You're #${youPos} — play daily to break into the top 8.`;
+    : youPos && youPos <= 8 ? "You're on the board. Keep climbing."
+    : `You're #${youPos}. Play daily to break into the top 8.`;
 }
 
 function renderGames() {
   $('games-grid').innerHTML = state.games.map((g, i) => `
     <button class="game-card reveal" data-game="${g.id}" style="transition-delay:${(i % 3) * 80}ms">
       <span class="game-icon">${GAME_ICONS[g.id]}</span>
-      <h3>${g.name}</h3>
+      <h3>${g.name} <span class="game-cap">${GAME_CAPS[g.id]} pts/day</span></h3>
       <p>${g.desc}</p>
       <div class="game-meta">
         <span class="game-skill">${g.skill}</span>
@@ -212,7 +215,7 @@ function renderRankProgress() {
   const box = $('rank-progress');
   if (!state.wallet) {
     box.innerHTML = `
-      <div class="rank-progress-top"><span>Your progress</span><b>—</b></div>
+      <div class="rank-progress-top"><span>Your progress</span><b>–</b></div>
       <div class="rank-progress-bar"><div class="rank-progress-fill"></div></div>
       <div class="rank-progress-note">Connect your wallet to start tracking your rank progress.</div>`;
     return;
@@ -225,7 +228,7 @@ function renderRankProgress() {
       <b>${next ? `${(next.min - state.points).toLocaleString()} pts to ${next.name}` : 'max rank reached'}</b>
     </div>
     <div class="rank-progress-bar"><div class="rank-progress-fill" data-pct="${pct}"></div></div>
-    <div class="rank-progress-note">${next ? `${pct}% of the way to ${next.name} — payout multiplier jumps to ${next.mult}.` : 'You sit at the top of the pool.'}</div>`;
+    <div class="rank-progress-note">${next ? `${pct}% of the way to ${next.name}. Payout multiplier jumps to ${next.mult}.` : 'You sit at the top of the pool.'}</div>`;
   requestAnimationFrame(() =>
     requestAnimationFrame(() => {
       const fill = box.querySelector('.rank-progress-fill');
@@ -236,19 +239,19 @@ function renderRankProgress() {
 /* ---------- FAQ ---------- */
 const FAQ = [
   ['What is skillbased?',
-   'The gaming arena on Robinhood Chain. Six short games — reaction, aim, typing, sequence memory, number memory, and chess — that sharpen the mechanics and mentality traders actually use at the screen. Scores become points, points become rank, rank becomes <b>USDG prizes</b>.'],
+   'A browser gaming arena on Robinhood Chain. Six short games (reaction, aim, typing, sequence memory, number memory, chess) that train the reflexes and focus traders use at the screen. Your best runs bank points, points set your rank, and rank multiplies your share of the weekly <b>USDG prize pool</b>.'],
   ['What is $SKILL and how do prizes work?',
-   "$SKILL is the coin that powers the arena — it is <b>never handed out as a reward</b>. Every $SKILL trade accrues creator fees on Robinhood Chain, and those fees plus a pre-funded USDG treasury fund a weekly <b>USDG prize pool</b>. Each Monday the pool settles and splits across active members by weekly points × rank multiplier. Prizes are paid in USDG on Robinhood Chain: no emissions, no inflation, no token dumps."],
+   "$SKILL is the coin behind the arena, launched on PONS. It is <b>never handed out as a reward</b>. Every $SKILL trade accrues creator fees, and those fees plus a pre-funded USDG treasury fill a weekly <b>USDG prize pool</b>. Each Monday the pool settles and splits across active players by weekly points × rank multiplier. Prizes are paid in USDG on Robinhood Chain: no emissions, no inflation, no token dumps."],
   ['Do I need to log in to play?',
-   'No — every game is free to play as a guest. But guest scores are <b>not saved</b>. Connect your wallet to save scores, earn points, appear on the leaderboard, and qualify for USDG prizes.'],
+   'No. Every game is free to play as a guest, but guest scores are <b>not saved</b>. Connect an EVM wallet (MetaMask or similar) to save scores, bank points, appear on the leaderboard and qualify for USDG prizes.'],
   ['How do points work?',
-   "Each game scores off performance — faster reactions, higher WPM, deeper memory levels, chess results. But only your <b>best run per game per day</b> banks points: replays only add the difference over today's best, so grinding adds nothing. Per-game daily caps plus quest bonuses (+50 first game, +75 for three games, +100 for three different games) put the daily ceiling at <b>1,275 pts</b>. Weekly points reset Monday and drive USDG prizes; lifetime points drive your rank."],
+   "Each game turns performance into points. Reaction: (450 minus your average ms) / 2. Aim: (1400 minus ms per target) / 9. Typing: wpm × accuracy. Sequence: 15 per level. Numbers: 20 per level. Chess: 250 for a checkmate win, 40 to 100 for a draw, 15 for a loss. Only your <b>best run per game per day</b> banks points, capped per game (Reaction 150, Aim 150, Typing 200, Sequence 150, Numbers 150, Chess 250). Replays add only the difference over today's best. Three daily quests add +50, +75 and +100, so a perfect day banks <b>1,275 pts</b>. Weekly points reset Monday and drive prizes. Lifetime points drive your rank."],
   ['How do ranks work?',
-   'Total points place you in a tier: Bronze (0+), Silver (500+), Gold (1,500+), Platinum (3,500+), Diamond (7,500+), Master (15,000+). Each tier carries a payout multiplier from 1.0x up to 3.0x. Seasons reset periodically so the ladder stays alive.'],
+   'Lifetime points place you in a tier: Bronze (0+), Silver (500+), Gold (1,500+), Platinum (3,500+), Diamond (7,500+), Master (15,000+). Each tier carries a payout multiplier from 1.0x up to 3.0x, applied to your weekly points at settlement. Lifetime points never reset, so rank only goes up.'],
   ['Can I play against friends?',
-   'Yes. <b>Typing Test</b> and <b>Chess</b> both support invite links. After a typing run, copy the challenge link — your rival gets the exact same words and a target to beat. In chess, hit <b>Invite a friend</b> to start a match by link: each move generates a reply link you send back and forth until someone gets mated.'],
+   'Yes. <b>Typing Test</b> and <b>Chess</b> both support invite links. After a typing run, copy the challenge link: your rival gets the exact same words and a target to beat. In chess, hit <b>Invite a friend</b> to start a match by link. Each move generates a reply link you send back and forth until someone gets mated. Friendly chess matches score no points.'],
   ['What stops people from cheating?',
-   'Scores are validated for humanly-possible ranges, and suspicious runs are pruned before weekly settlement. Payouts go to consistent, plausible play — not to whoever scripts the fastest clicker.'],
+   'Every run is checked against human limits. Reaction averages under 90ms, aim under 120ms per target and typing over 230 wpm are voided instantly and bank nothing. Flagged runs are pruned before weekly settlement, and confirmed cheaters are wallet-banned from the board and all future payouts.'],
 ];
 
 export function renderFAQ() {
@@ -314,9 +317,9 @@ export function openGame(id, ctx = null) {
       const res = award(id, pts);
       renderAll();
       if (res.gained > 0) {
-        toast(`<b>+${res.gained} pts</b> banked — ${label}` + (res.prev ? ' (new daily best)' : ''));
+        toast(`<b>+${res.gained} pts</b> banked: ${label}` + (res.prev ? ' (new daily best)' : ''));
       } else {
-        toast(`Solid run — today's best for this game is already banked (+${res.prev}).`);
+        toast(`Solid run. Today's best for this game is already banked (+${res.prev}).`);
       }
       res.completed.forEach(q => toast(`Daily quest complete: ${q.name} <b>+${q.pts} pts</b>`));
       $('modal-best').textContent = `best +${state.best[id]} pts`;
@@ -332,7 +335,7 @@ export function closeGame() {
   setTimeout(() => { modal.hidden = true; $('modal-body').innerHTML = ''; }, 280);
 }
 
-/* Result screen — guest-aware: guests see the score but a "log in to save" CTA.
+/* Result screen - guest-aware: guests see the score but a "log in to save" CTA.
    `pts === null` means the run was voided by anti-cheat.
    `extra` is optional HTML appended below the score (e.g. a challenge-link box). */
 export function showResult(container, pts, subText, onReplay, extra = '') {
@@ -342,9 +345,13 @@ export function showResult(container, pts, subText, onReplay, extra = '') {
       <div class="game-stage result-card">
         <div class="result-pts void">RUN VOIDED</div>
         <div class="result-sub">${subText}</div>
-        <button class="btn btn-primary" id="replay-btn" style="margin-top:12px">Play again</button>
+        <div class="result-actions">
+          <button class="btn btn-primary" id="replay-btn">Play again</button>
+          <button class="btn btn-ghost" id="back-btn">Back to arena</button>
+        </div>
       </div>`;
     container.querySelector('#replay-btn').addEventListener('click', onReplay);
+    container.querySelector('#back-btn').addEventListener('click', closeGame);
     return;
   }
   container.innerHTML = `
@@ -353,13 +360,17 @@ export function showResult(container, pts, subText, onReplay, extra = '') {
       <div class="result-sub">${subText}</div>
       ${saved ? '' : `
         <div class="result-save-cta">
-          <p>You're playing as a guest — this score wasn't saved.</p>
+          <p>You're playing as a guest, so this score wasn't saved.</p>
           <button class="btn btn-wallet" id="result-connect">Connect wallet to save scores</button>
         </div>`}
       ${extra}
-      <button class="btn btn-primary" id="replay-btn" style="margin-top:12px">Play again</button>
+      <div class="result-actions">
+        <button class="btn btn-primary" id="replay-btn">Play again</button>
+        <button class="btn btn-ghost" id="back-btn">Back to arena</button>
+      </div>
     </div>`;
   container.querySelector('#replay-btn').addEventListener('click', onReplay);
+  container.querySelector('#back-btn').addEventListener('click', closeGame);
   container.querySelector('#result-connect')?.addEventListener('click', connectWallet);
 }
 
@@ -367,6 +378,23 @@ export function showResult(container, pts, subText, onReplay, extra = '') {
 export function wire() {
   $('btn-wallet').addEventListener('click', () => state.wallet ? disconnectWallet() : connectWallet());
   $('modal-close').addEventListener('click', closeGame);
+  $('modal-back').addEventListener('click', closeGame);
+
+  // dark mode
+  $('theme-toggle').addEventListener('click', () => {
+    const dark = document.documentElement.dataset.theme !== 'dark';
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    try { localStorage.setItem('sb_theme', dark ? 'dark' : 'light'); } catch {}
+  });
+
+  // contract address pill: copies when an address is set
+  $('ca-addr').textContent = CONTRACT_ADDRESS;
+  $('ca-pill').addEventListener('click', () => {
+    if (!CONTRACT_ADDRESS) return toast('Contract address drops at launch.');
+    navigator.clipboard?.writeText(CONTRACT_ADDRESS)
+      .then(() => toast('Contract address copied.'))
+      .catch(() => {});
+  });
   $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeGame(); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !$('modal').hidden) closeGame();
@@ -380,7 +408,7 @@ export function wire() {
     const el = e.target.closest('[data-copy]');
     if (!el) return;
     navigator.clipboard?.writeText(el.dataset.copy)
-      .then(() => toast('Invite link copied — send it to your rival.'))
-      .catch(() => toast('Copy blocked — select the link and copy it manually.'));
+      .then(() => toast('Invite link copied. Send it to your rival.'))
+      .catch(() => toast('Copy blocked. Select the link and copy it manually.'));
   });
 }

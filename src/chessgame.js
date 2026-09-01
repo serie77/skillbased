@@ -1,4 +1,4 @@
-/* skillbased — chess vs a greedy engine (chess.js 1.x) */
+/* skillbased - chess vs a greedy engine (chess.js 1.x) */
 import { Chess } from 'chess.js';
 import { state } from './state.js';
 import { showResult } from './ui.js';
@@ -39,15 +39,15 @@ state.games.push({
             moveList.push(m);
           }
           match = { from: ctx.from, color: game.turn() };
-        } catch { /* corrupt link — fall back to engine game */ }
+        } catch { /* corrupt link - fall back to engine game */ }
       }
       let sel = null, lastMove = null, over = false;
 
       el.innerHTML = `
         <div class="chess-wrap">
-          ${match ? `<div class="invite-banner"><span class="vs">VS</span><span>Match vs <b>${match.from}</b> — you play <b>${match.color === 'w' ? 'white' : 'black'}</b>. Make your move, then send the reply link back.</span></div>` : ''}
+          ${match ? `<div class="invite-banner"><span class="vs">VS</span><span>Match vs <b>${match.from}</b>. You play <b>${match.color === 'w' ? 'white' : 'black'}</b>. Make your move, then send the reply link back.</span></div>` : ''}
           <div class="chess-topbar">
-            <div class="chess-status" id="cs">${match ? 'Your move.' : "Your move — you're white."}</div>
+            <div class="chess-status" id="cs">${match ? 'Your move.' : "Your move. You're white."}</div>
             <div class="board-themes" id="c-themes">
               <span>Board</span>
               ${THEMES.map(t => `<button class="theme-swatch" data-theme="${t.id}" title="${t.name}"><i style="background:${t.light}"></i><i style="background:${t.dark}"></i></button>`).join('')}
@@ -122,22 +122,22 @@ state.games.push({
           // friendly match: no points (client-side matches are honor games)
           const won = game.isCheckmate() && game.turn() !== match.color;
           const sub = game.isCheckmate()
-            ? (won ? `Checkmate — you beat ${match.from}.` : `Checkmate — ${match.from} takes it.`)
+            ? (won ? `Checkmate. You beat ${match.from}.` : `Checkmate. ${match.from} takes it.`)
             : 'Match drawn.';
           showResult(el, 0, sub + ' Friendly matches score no points.', () => { ctx = null; start(); });
           return;
         }
         let pts, label, sub;
         if (resigned) {
-          pts = 5; label = 'Chess — resigned'; sub = 'Resigned. Sit back down tomorrow.';
+          pts = 5; label = 'Chess: resigned'; sub = 'Resigned. Sit back down tomorrow.';
         } else if (game.isCheckmate()) {
           const won = game.turn() === 'b';
           pts = won ? 250 : 15;
-          label = won ? 'Chess — checkmate win' : 'Chess — loss';
-          sub = won ? 'Checkmate — you beat the house.' : 'Checkmated. Review and requeue.';
+          label = won ? 'Chess: checkmate win' : 'Chess: loss';
+          sub = won ? 'Checkmate. You beat the house.' : 'Checkmated. Review and requeue.';
         } else {
           pts = Math.max(40, 100 + materialEdge() * 5);
-          label = 'Chess — draw';
+          label = 'Chess: draw';
           sub = 'Drawn game.';
         }
         finish(pts, label);
@@ -158,7 +158,7 @@ state.games.push({
         lastMove = best;
         draw();
         if (game.isGameOver()) return endGame(false);
-        statusEl.textContent = game.inCheck() ? 'Check — your move.' : 'Your move.';
+        statusEl.textContent = game.inCheck() ? 'Check. Your move.' : 'Your move.';
       };
 
       const myColor = () => match ? match.color : 'w';
@@ -179,8 +179,8 @@ state.games.push({
           if (game.isGameOver()) return endGame(false);
           if (match) {
             over = true; // locked until the rival replies with their link
-            statusEl.textContent = 'Move sent — waiting on ' + match.from + '.';
-            linkSlot.innerHTML = linkBox('Send this reply link — the match continues when they move:', chessLink(moveList));
+            statusEl.textContent = 'Move sent. Waiting on ' + match.from + '.';
+            linkSlot.innerHTML = linkBox('Send this reply link. The match continues when they move:', chessLink(moveList));
             return;
           }
           statusEl.textContent = 'Engine thinking…';
@@ -198,8 +198,8 @@ state.games.push({
       el.querySelector('#c-invite')?.addEventListener('click', () => {
         over = true;
         clearTimeout(aiTimer);
-        statusEl.textContent = 'Match open — your friend plays ' + (game.turn() === 'w' ? 'white' : 'black') + '.';
-        linkSlot.innerHTML = linkBox('Send this invite link. When they move, they send a link back — open it to continue:', chessLink(moveList));
+        statusEl.textContent = 'Match open. Your friend plays ' + (game.turn() === 'w' ? 'white' : 'black') + '.';
+        linkSlot.innerHTML = linkBox('Send this invite link. When they move, they send a link back. Open it to continue:', chessLink(moveList));
         el.querySelector('#c-actions').innerHTML = '';
       });
       draw();

@@ -1,4 +1,4 @@
-/* skillbased — boot: splash, logo, render, wire */
+/* skillbased - boot: splash, logo, render, wire */
 import './style.css';
 import { logoSVG, setFavicon } from './pixel.js';
 import { GAME_ICONS } from './icons.js';
@@ -14,6 +14,7 @@ $('splash-logo').innerHTML = logoSVG(120, true);
 $('brand-logo').innerHTML = logoSVG(30);
 $('footer-logo').innerHTML = logoSVG(22);
 $('hero-art').innerHTML = GAME_ICONS.chess;
+$('coin-logo').innerHTML = logoSVG(120);
 setFavicon();
 
 // app

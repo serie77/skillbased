@@ -1,4 +1,4 @@
-/* skillbased — state: points, ranks, per-wallet persistence. Scores only save when logged in. */
+/* skillbased - state: points, ranks, per-wallet persistence. Scores only save when logged in. */
 
 export const RANKS = [
   { name: 'Bronze',   min: 0,     mult: '1.0x', color: '#c07a3a' },
@@ -64,9 +64,9 @@ export function setWallet(addr) {
    Only your BEST run per game per day banks points (grinding adds nothing).
    Per-game daily caps + quest bonuses give a hard daily ceiling. */
 export const GAME_CAPS = { reaction: 150, aim: 150, typing: 200, sequence: 150, numbers: 150, chess: 250 };
-export const DAILY_GAME_MAX = Object.values(GAME_CAPS).reduce((a, b) => a + b, 0); // 985
+export const DAILY_GAME_MAX = Object.values(GAME_CAPS).reduce((a, b) => a + b, 0); // 1,050
 export const DAILY_QUEST_MAX = 225;
-export const DAILY_MAX = DAILY_GAME_MAX + DAILY_QUEST_MAX; // 1,210
+export const DAILY_MAX = DAILY_GAME_MAX + DAILY_QUEST_MAX; // 1,275
 
 /* ---------- daily quests ---------- */
 export const DAILIES = [
@@ -84,7 +84,7 @@ export function dailyStats() {
   } catch { return empty; }
 }
 
-/* Monday of the current week — the weekly ladder key. */
+/* Monday of the current week - the weekly ladder key. */
 const weekKey = () => {
   const d = new Date();
   d.setDate(d.getDate() - (d.getDay() + 6) % 7);

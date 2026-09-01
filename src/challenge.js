@@ -1,4 +1,4 @@
-/* skillbased — invite links: seeded typing races and chess matches by link */
+/* skillbased - invite links: seeded typing races and chess matches by link */
 import { WORDS } from './words.js';
 import { shortAddr } from './state.js';
 
