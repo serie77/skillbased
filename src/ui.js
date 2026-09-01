@@ -215,8 +215,8 @@ function renderRankProgress() {
 const FAQ = [
   ['What is skillbased?',
    'A browser gaming arena on Robinhood Chain. Six short games (reaction, aim, typing, sequence memory, number memory, chess) that train the reflexes and focus traders use at the screen. Your best runs bank points, points set your rank, and rank multiplies your share of the weekly <b>USDG prize pool</b>.'],
-  ['What is $SKILL and how do prizes work?',
-   "$SKILL is the coin behind the arena, launched on PONS. It is <b>never handed out as a reward</b>. Every $SKILL trade accrues creator fees, and those fees plus a pre-funded USDG treasury fill a weekly <b>USDG prize pool</b>. Each Monday the pool settles and splits across active players by weekly points × rank multiplier. Prizes are paid in USDG on Robinhood Chain: no emissions, no inflation, no token dumps."],
+  ['What is $skill and how do prizes work?',
+   "$skill is the coin behind the arena, launched on PONS. It is <b>never handed out as a reward</b>. Every $skill trade accrues creator fees, and those fees plus a pre-funded USDG treasury fill a weekly <b>USDG prize pool</b>. Each Monday the pool settles and splits across active players by weekly points × rank multiplier. Prizes are paid in USDG on Robinhood Chain: no emissions, no inflation, no token dumps."],
   ['Do I need to log in to play?',
    'No. Every game is free to play as a guest, but guest scores are <b>not saved</b>. Connect an EVM wallet (MetaMask or similar) to save scores, bank points, appear on the leaderboard and qualify for USDG prizes.'],
   ['How do points work?',
