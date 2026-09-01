@@ -1,7 +1,8 @@
-/* skillbased - chess vs a greedy engine (chess.js 1.x) */
+/* skillbased - chess vs an engine (chess.js 1.x) with three difficulty levels,
+   plus friend matches by link: each move generates a reply link, sent back and forth. */
 import { Chess } from 'chess.js';
 import { state } from './state.js';
-import { showResult } from './ui.js';
+import { showResult, toast } from './ui.js';
 import { chessLink, linkBox } from './challenge.js';
 
 const PIECE_GLYPH = { p: '♟', n: '♞', b: '♝', r: '♜', q: '♛', k: '♚' };
@@ -17,20 +18,30 @@ const THEMES = [
 ];
 const themeById = id => THEMES.find(t => t.id === id) || THEMES[0];
 
+/* Engine difficulty. Checkmate-win points scale with it; the 250 daily cap is the Hard win. */
+const DIFFS = [
+  { id: 'easy',   name: 'Easy',   win: 100, drawScale: 0.4 },
+  { id: 'medium', name: 'Medium', win: 175, drawScale: 0.7 },
+  { id: 'hard',   name: 'Hard',   win: 250, drawScale: 1 },
+];
+const diffById = id => DIFFS.find(d => d.id === id) || DIFFS[1];
+
 state.games.push({
   id: 'chess',
   name: 'Chess',
 
   skill: 'mentality · strategy',
-  desc: 'Beat the house engine, or invite a friend to a match by link.',
+  desc: 'Beat the engine on three difficulties, or invite a friend to a match by link.',
   render(el, finish, ctx) {
     let aiTimer = null;
 
     const start = () => {
       clearTimeout(aiTimer);
       const game = new Chess();
-      const moveList = [];
+      let moveList = [];
       let match = null;
+      let diff = diffById(localStorage.getItem('sb_diff'));
+
       if (ctx?.moves) {
         // match-by-link: replay the position, you play the side to move
         try {
@@ -38,16 +49,34 @@ state.games.push({
             game.move({ from: m.slice(0, 2), to: m.slice(2, 4), promotion: m[4] || undefined });
             moveList.push(m);
           }
-          match = { from: ctx.from, color: game.turn() };
-        } catch { /* corrupt link - fall back to engine game */ }
+          match = { from: ctx.from, color: game.turn(), fresh: !!ctx.fresh };
+        } catch {
+          // corrupt link: fall back to a clean engine game
+          game.reset();
+          moveList = [];
+          match = null;
+        }
       }
       let sel = null, lastMove = null, over = false;
+      if (match && moveList.length) {
+        const m = moveList[moveList.length - 1];
+        lastMove = { from: m.slice(0, 2), to: m.slice(2, 4) };
+      }
+
+      const banner = !match ? '' : match.fresh
+        ? `<div class="invite-banner"><span class="vs">VS</span><span>New match vs a friend. Make your first move as <b>white</b>, then send them the link.</span></div>`
+        : `<div class="invite-banner"><span class="vs">VS</span><span>Match vs <b>${match.from}</b>. You play <b>${match.color === 'w' ? 'white' : 'black'}</b>. Make your move, then send the reply link back.</span></div>`;
 
       el.innerHTML = `
         <div class="chess-wrap">
-          ${match ? `<div class="invite-banner"><span class="vs">VS</span><span>Match vs <b>${match.from}</b>. You play <b>${match.color === 'w' ? 'white' : 'black'}</b>. Make your move, then send the reply link back.</span></div>` : ''}
+          ${banner}
           <div class="chess-topbar">
             <div class="chess-status" id="cs">${match ? 'Your move.' : "Your move. You're white."}</div>
+            ${match ? '' : `
+            <div class="board-themes" id="c-diff">
+              <span>Engine</span>
+              ${DIFFS.map(d => `<button class="diff-pill${d === diff ? ' active' : ''}" data-diff="${d.id}">${d.name}</button>`).join('')}
+            </div>`}
             <div class="board-themes" id="c-themes">
               <span>Board</span>
               ${THEMES.map(t => `<button class="theme-swatch" data-theme="${t.id}" title="${t.name}"><i style="background:${t.light}"></i><i style="background:${t.dark}"></i></button>`).join('')}
@@ -77,6 +106,17 @@ state.games.push({
         if (!s) return;
         localStorage.setItem('sb_board', s.dataset.theme);
         applyTheme(themeById(s.dataset.theme));
+      });
+
+      // switching difficulty starts a fresh engine game
+      el.querySelector('#c-diff')?.addEventListener('click', e => {
+        const b = e.target.closest('.diff-pill');
+        if (!b || b.dataset.diff === diff.id) return;
+        localStorage.setItem('sb_diff', b.dataset.diff);
+        const started = moveList.length > 0 && !over;
+        ctx = null;
+        start();
+        toast(`New game vs the <b>${diffById(b.dataset.diff).name}</b> engine${started ? '. The old game was scrapped, not resigned' : ''}.`);
       });
 
       const legalFrom = sq => game.moves({ square: sq, verbose: true });
@@ -132,26 +172,45 @@ state.games.push({
           pts = 5; label = 'Chess: resigned'; sub = 'Resigned. Sit back down tomorrow.';
         } else if (game.isCheckmate()) {
           const won = game.turn() === 'b';
-          pts = won ? 250 : 15;
-          label = won ? 'Chess: checkmate win' : 'Chess: loss';
-          sub = won ? 'Checkmate. You beat the house.' : 'Checkmated. Review and requeue.';
+          pts = won ? diff.win : 15;
+          label = won ? `Chess: checkmate win (${diff.name})` : 'Chess: loss';
+          sub = won ? `Checkmate. You beat the ${diff.name} engine.` : 'Checkmated. Review and requeue.';
         } else {
-          pts = Math.max(40, 100 + materialEdge() * 5);
-          label = 'Chess: draw';
+          pts = Math.max(20, Math.round((100 + materialEdge() * 5) * diff.drawScale));
+          label = `Chess: draw (${diff.name})`;
           sub = 'Drawn game.';
         }
         finish(pts, label);
         showResult(el, pts, sub, start);
       };
 
+      /* Engine: Easy plays random. Medium plays greedy captures. Hard looks one reply
+         ahead and avoids moves that hang material or walk into mate. */
       const aiMove = () => {
         const moves = game.moves({ verbose: true });
         if (!moves.length) return endGame(false);
-        let best = null, bestVal = -1;
-        for (const m of moves) {
-          let v = (m.captured ? PIECE_VAL[m.captured] : 0) + (m.promotion ? 8 : 0) + Math.random();
-          if (m.san.includes('#')) v += 100;
-          if (v > bestVal) { bestVal = v; best = m; }
+        let best = null;
+        if (diff.id === 'easy') {
+          best = moves[Math.floor(Math.random() * moves.length)];
+        } else {
+          let bestVal = -Infinity;
+          for (const m of moves) {
+            let v = (m.captured ? PIECE_VAL[m.captured] : 0) + (m.promotion ? 8 : 0) + Math.random();
+            if (m.san.includes('#')) v += 1000;
+            if (diff.id === 'hard') {
+              game.move(m);
+              let reply = 0;
+              if (!game.isGameOver()) {
+                for (const r of game.moves({ verbose: true })) {
+                  const rv = (r.captured ? PIECE_VAL[r.captured] : 0) + (r.san.includes('#') ? 1000 : 0);
+                  if (rv > reply) reply = rv;
+                }
+              }
+              game.undo();
+              v -= reply;
+            }
+            if (v > bestVal) { bestVal = v; best = m; }
+          }
         }
         game.move(best);
         moveList.push(best.from + best.to + (best.promotion || ''));
@@ -179,8 +238,12 @@ state.games.push({
           if (game.isGameOver()) return endGame(false);
           if (match) {
             over = true; // locked until the rival replies with their link
-            statusEl.textContent = 'Move sent. Waiting on ' + match.from + '.';
-            linkSlot.innerHTML = linkBox('Send this reply link. The match continues when they move:', chessLink(moveList));
+            statusEl.textContent = match.fresh ? 'Move made. Send the invite link.' : 'Move sent. Waiting on ' + match.from + '.';
+            linkSlot.innerHTML = linkBox(
+              match.fresh
+                ? 'Send this invite link. Your friend plays black, moves, and sends a link back:'
+                : 'Send this reply link. The match continues when they move:',
+              chessLink(moveList));
             return;
           }
           statusEl.textContent = 'Engine thinking…';
@@ -195,14 +258,15 @@ state.games.push({
       });
 
       el.querySelector('#c-resign')?.addEventListener('click', () => { if (!over) endGame(true); });
+      // fresh match: reset the board, you play white, first move builds the invite link
       el.querySelector('#c-invite')?.addEventListener('click', () => {
-        over = true;
         clearTimeout(aiTimer);
-        statusEl.textContent = 'Match open. Your friend plays ' + (game.turn() === 'w' ? 'white' : 'black') + '.';
-        linkSlot.innerHTML = linkBox('Send this invite link. When they move, they send a link back. Open it to continue:', chessLink(moveList));
-        el.querySelector('#c-actions').innerHTML = '';
+        ctx = { moves: [], from: 'your rival', fresh: true };
+        start();
       });
       draw();
+      // a link can arrive already decided (their move mated you, or a draw): show it
+      if (match && game.isGameOver()) endGame(false);
     };
 
     start();

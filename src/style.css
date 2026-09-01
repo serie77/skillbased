@@ -734,6 +734,13 @@ section { scroll-margin-top: 72px; }
 .chess-topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; width: 100%; max-width: min(92vw, calc(clamp(44px, 8.6vh, 76px) * 8)); }
 .board-themes { display: flex; align-items: center; gap: 8px; }
 .board-themes span { font-size: 12px; color: var(--muted); margin-right: 2px; }
+.diff-pill {
+  font-family: var(--font-mono); font-size: 11px; padding: 4px 10px; border-radius: 999px;
+  background: var(--card); border: 1px solid var(--border); color: var(--muted); cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, background 0.15s;
+}
+.diff-pill:hover { color: var(--text); }
+.diff-pill.active { color: var(--acc); border-color: rgba(22,163,74,.5); background: rgba(22,163,74,.08); }
 .theme-swatch {
   width: 26px; height: 26px; border-radius: 8px; cursor: pointer; border: 2px solid transparent;
   overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; padding: 0;

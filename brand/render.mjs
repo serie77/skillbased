@@ -106,6 +106,41 @@ const pages = {
     </div>
     <div class="foot mono" style="font-size:14px;letter-spacing:.12em"><b>@skillbasedarena</b> — the gaming arena on Robinhood Chain</div>`],
 
+  'tweet-best-run': [1920, 815, `
+    ${pixels(12, 1920, 815, 21)}
+    <div style="position:absolute;left:120px;top:150px;width:800px">
+      <div class="logo" style="margin-bottom:40px">${logoSVG(72)}</div>
+      <div class="head" style="font-size:96px;color:#e7efe9">Only your</div>
+      <div class="head grad" style="font-size:96px">best run counts.</div>
+      <div class="mono" style="font-size:16px;color:#8fa397;margin-top:36px;letter-spacing:.2em;line-height:2">Replays only add the difference.<br>Quests pay for showing up: <span style="color:#22c55e">+225 a day</span>.</div>
+    </div>
+    <div style="position:absolute;right:140px;bottom:120px;display:flex;align-items:flex-end;gap:26px">
+      ${[5, 8, 6, 11, 7, 4, 9].map((h, i) => {
+        const best = h === 11;
+        return `<div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+          <div class="mono" style="font-size:13px;letter-spacing:.1em;color:${best ? '#22c55e' : '#3b4a42'};white-space:nowrap">${best ? '+150 banked' : '+0'}</div>
+          <div style="display:flex;flex-direction:column-reverse;gap:6px">${Array.from({ length: h }, () => `<i style="display:block;width:54px;height:28px;background:${best ? 'linear-gradient(180deg,#a3e635,#16a34a)' : '#1b2620'};border:1px solid ${best ? 'rgba(163,230,53,.5)' : 'rgba(255,255,255,.05)'};box-shadow:${best ? '0 0 18px rgba(34,197,94,.35)' : 'none'}"></i>`).join('')}</div>
+          <div class="mono" style="font-size:12px;letter-spacing:.1em;color:${best ? '#e7efe9' : '#3b4a42'}">run ${i + 1}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="mono" style="position:absolute;right:140px;top:150px;font-size:13px;letter-spacing:.2em;color:#3b4a42">Today · reaction time · 7 runs</div>
+    <div style="position:absolute;left:120px;bottom:118px;display:flex;gap:14px">
+      ${[['Warm-up', '1/1', '+50'], ['Reps', '3/3', '+75'], ['Range', '1/3', '+100']].map(([n, p, v]) => {
+        const done = p[0] === p[2];
+        return `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:12px;background:#151e19;border:1px solid ${done ? 'rgba(34,197,94,.45)' : 'rgba(255,255,255,.08)'}">
+          <span style="width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#0c1210;background:${done ? '#22c55e' : 'transparent'};border:2px solid ${done ? '#22c55e' : '#2c3a32'}">${done ? '✓' : ''}</span>
+          <span style="font-size:14px;font-weight:600;color:#e7efe9">${n}</span>
+          <span class="mono" style="font-size:12px;letter-spacing:.05em;color:${done ? '#22c55e' : '#8fa397'}">${done ? v : p}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="foot mono" style="font-size:14px;letter-spacing:.12em;color:#8fa397;text-align:left;left:120px;bottom:48px"><b>@skillbasedarena</b></div>`, `
+    body { background: radial-gradient(900px 600px at 20% 0%, rgba(34,197,94,.14), transparent 65%), radial-gradient(700px 500px at 90% 100%, rgba(34,197,94,.10), transparent 60%), #0c1210; color: #e7efe9; }
+    .px { background: #22c55e; opacity: .18; } .px.l { background: #a3e635; }
+    .grad { background: linear-gradient(120deg, #22c55e 10%, #a3e635 50%, #16a34a 90%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .foot b { color: #22c55e; }`],
+
   'end-of-thread': [1600, 900, `
     ${arches}${pixels(10, 1600, 900, 5)}
     <div style="position:absolute;left:48px;top:44px" class="logo">${logoSVG(64)}</div>

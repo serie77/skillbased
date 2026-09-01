@@ -19,7 +19,7 @@ const GAMES = [
   { id: 'typing',   name: 'Typing Test',     skill: 'mechanics · execution', desc: '30 seconds, as many words as you can. Race friends with invite links.' },
   { id: 'sequence', name: 'Sequence Memory', skill: 'mentality · memory',    desc: 'Watch the pattern, repeat it back. One tile longer every level.' },
   { id: 'numbers',  name: 'Number Memory',   skill: 'mentality · focus',     desc: "A number flashes, then it's gone. Type it back. Digits grow each level." },
-  { id: 'chess',    name: 'Chess',           skill: 'mentality · strategy',  desc: 'Beat the house engine, or invite a friend to a match by link.' },
+  { id: 'chess',    name: 'Chess',           skill: 'mentality · strategy',  desc: 'Beat the engine on three difficulties, or invite a friend to a match by link.' },
 ];
 
 /* Ladder demo: one sample player per tier, showing how weekly pts × multiplier sets the share. */
