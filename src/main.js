@@ -10,7 +10,7 @@ import { runSplash } from './splash.js';
 const $ = id => document.getElementById(id);
 
 /* $skill contract address. Empty until launch. */
-const CONTRACT_ADDRESS = '';
+const CONTRACT_ADDRESS = '0x4318d4a207339f19c88c349541ecd31fd5c9a0dd';
 
 /* Static game showcase (the playable versions register themselves inside the app). */
 const GAMES = [
