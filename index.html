@@ -1,0 +1,228 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#f5f8f4">
+<title>skillbased — sharpen your edge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- splash / loading screen -->
+<div class="splash" id="splash">
+  <div class="splash-logo" id="splash-logo"></div>
+  <div class="splash-word">SKILLBASED</div>
+  <div class="splash-bar"><div class="splash-fill" id="splash-fill"></div></div>
+  <div class="splash-tip" id="splash-tip">loading the arena…</div>
+</div>
+
+<nav class="nav">
+  <a class="brand" href="#top">
+    <span class="brand-logo" id="brand-logo"></span>
+    <span class="brand-name">skillbased</span>
+  </a>
+  <div class="nav-links">
+    <a href="#leaderboard">Leaderboard</a>
+    <a href="#games">Games</a>
+    <a href="#ranks">Ranks</a>
+    <a href="#faq">FAQ</a>
+  </div>
+  <div class="nav-right">
+    <a class="x-link" href="https://x.com/skillbasedarena" target="_blank" rel="noopener" aria-label="skillbased on X" title="@skillbasedarena">
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.451-6.231zm-1.161 17.52h1.833L7.084 4.126H5.117l11.966 15.644z"/></svg>
+    </a>
+    <div class="points-pill" id="nav-points" title="Your points">
+      <span class="rank-dot" id="nav-rank-dot"></span>
+      <span id="nav-points-value">0</span>&nbsp;pts
+    </div>
+    <button class="btn btn-wallet" id="btn-wallet">Connect Wallet</button>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="hero-glow"></div>
+  <div class="hero-pixels" id="hero-pixels"></div>
+  <div class="hero-art" id="hero-art" aria-hidden="true"></div>
+  <div class="hero-inner">
+    <a class="launch-badge rise r1" href="https://ponslaunchpad.com" target="_blank" rel="noopener">
+      <img src="/pons.png" alt="PONS"><img src="/robinhood-chain.png" alt="Robinhood Chain">
+      <span>Launched on <b>PONS</b> <span class="sep">·</span> Robinhood Chain</span>
+    </a>
+    <h1 class="display rise r2">Sharpen<br><span class="grad">your edge.</span></h1>
+    <p class="hero-sub rise r3">Daily mental reps for traders — reaction, aim, typing, memory, chess.
+    Climb the board, rank up, and compete for weekly <b>USDG prizes</b> on Robinhood Chain.</p>
+    <div class="hero-actions rise r4">
+      <a class="btn btn-primary" href="#games">Start training</a>
+      <a class="btn btn-ghost" href="#coin">About $SKILL</a>
+    </div>
+    <div class="hero-stats rise r4">
+      <div><b id="stat-points">0</b><span>your points</span></div>
+      <div><b id="stat-rank">—</b><span>your rank</span></div>
+      <div><b>6</b><span>games</span></div>
+    </div>
+    <div class="hero-scroll rise r5"><i></i>scroll to explore</div>
+  </div>
+</header>
+
+<div class="marquee" aria-hidden="true"><div class="marquee-track">
+  <span>Reaction — Aim — Typing — Memory — Chess — <b>$SKILL</b> — </span>
+  <span>Reaction — Aim — Typing — Memory — Chess — <b>$SKILL</b> — </span>
+</div></div>
+
+<main>
+  <section class="section lb-section" id="leaderboard">
+    <div class="lb-copy reveal">
+      <span class="sec-tag">/leaderboard · 01</span>
+      <h2>The board<br>is live.</h2>
+      <p>Weekly USDG prizes settle straight off this ladder. Every point you bank moves you up it — and the top of the board eats first.</p>
+    </div>
+    <aside class="lb-card reveal">
+      <div class="lb-head">
+        <h2>Leaderboard</h2>
+        <span class="lb-mock" data-tip="Mock rankings — seeded until enough players are climbing the board. Real scores replace them as members join.">mock data</span>
+        <span class="lb-season">USDG prizes · weekly</span>
+      </div>
+      <ol class="lb-list" id="lb-list"></ol>
+      <div class="lb-you" id="lb-you"></div>
+    </aside>
+  </section>
+
+  <section class="section" id="games">
+    <div class="section-head reveal">
+      <span class="sec-tag">/training · 02</span>
+      <h2>Daily training</h2>
+      <p>Six games, unlimited runs. Better scores, more points — and daily quests stack bonus points on top.</p>
+    </div>
+    <div class="dailies reveal" id="dailies"></div>
+    <div class="games-grid" id="games-grid"></div>
+  </section>
+
+  <section class="section" id="ranks">
+    <div class="section-head reveal">
+      <span class="sec-tag">/how-it-works · 03</span>
+      <h2>How it works</h2>
+      <p>Built so skill pays and grinding doesn't. Play as much as you want — only getting better moves the needle.</p>
+    </div>
+
+    <div class="rank-steps reveal">
+      <div class="rank-step"><span class="rank-step-num">01</span><h3>Play</h3><p>Six games, unlimited runs, free forever. Warm up, retry, chase your numbers.</p></div>
+      <div class="rank-step-arrow">→</div>
+      <div class="rank-step"><span class="rank-step-num">02</span><h3>Bank your best</h3><p>Only your best run per game each day banks points. A better run tops it up — a worse one changes nothing.</p></div>
+      <div class="rank-step-arrow">→</div>
+      <div class="rank-step"><span class="rank-step-num">03</span><h3>Get paid</h3><p>The weekly USDG prize pool splits by your weekly points × rank multiplier. Settled every Monday.</p></div>
+    </div>
+
+    <div class="hiw-grid">
+      <div class="hiw-card reveal">
+        <b>Only your best counts</b>
+        <p>Time spent means nothing — improvement means everything. Replaying a game only adds the difference over today's best. Farming easy runs, insta-failing, or resign-looping banks exactly zero.</p>
+      </div>
+      <div class="hiw-card reveal">
+        <b>Hard daily cap</b>
+        <p>Each game has a daily ceiling, and quests add a fixed bonus — a perfect day banks <b>1,275 pts</b>, whether it takes you 30 minutes or 10 hours.</p>
+        <div class="caps-list">
+          <span>Reaction <b>150</b></span><span>Aim <b>150</b></span><span>Typing <b>200</b></span>
+          <span>Sequence <b>150</b></span><span>Numbers <b>150</b></span><span>Chess <b>250</b></span>
+          <span>Quests <b>225</b></span>
+        </div>
+      </div>
+      <div class="hiw-card reveal">
+        <b>Weekly ladder</b>
+        <p>Your weekly points reset every Monday, and the payout pool settles against them: your share = your weekly points × rank multiplier, over everyone's weighted total. Every week is a fresh race.</p>
+      </div>
+      <div class="hiw-card reveal">
+        <b>Ranks are forever</b>
+        <p>Lifetime points never reset — they set your tier, Bronze through Master, and your payout multiplier from <b>1.0x to 3.0x</b>. Consistency compounds even when the weekly ladder wipes.</p>
+      </div>
+    </div>
+
+    <div class="rank-progress reveal" id="rank-progress"></div>
+    <div class="ranks-row" id="ranks-row"></div>
+  </section>
+
+  <section class="section coin-section" id="coin">
+    <div class="coin-card reveal">
+      <div class="coin coin-lg">S</div>
+      <div>
+        <span class="sec-tag">/coin · 04</span>
+        <h2>$SKILL</h2>
+        <p>The coin that powers the arena — launched on <a href="https://ponslaunchpad.com" target="_blank" rel="noopener"><b>PONS</b></a>, Robinhood Chain’s launchpad. $SKILL is never handed out as a reward —
+        instead, every trade accrues creator fees on Robinhood Chain, and those fees fund the
+        weekly <b>USDG prize pool</b> paid to active members. No emissions, no inflation,
+        no token dumps on players.</p>
+        <div class="coin-points">
+          <span>Play daily → bank points</span>
+          <span>Points → rank tiers</span>
+          <span>Weekly points × rank → USDG prize</span>
+        </div>
+      </div>
+    </div>
+    <div class="fund-grid">
+      <div class="fund-card reveal">
+        <b>Creator fees</b>
+        <p>Every $SKILL trade accrues creator fees on Robinhood Chain. Those fees flow straight into the weekly USDG prize pool — trading volume literally pays the players.</p>
+      </div>
+      <div class="fund-card reveal">
+        <b>Pre-funded treasury</b>
+        <p>A USDG treasury funded at launch backstops the pool, so prizes are guaranteed through the early seasons regardless of week-to-week volume.</p>
+      </div>
+      <div class="fund-card reveal">
+        <b>Weekly settlement</b>
+        <p>Fees plus treasury top-up settle into one USDG pool each Monday, split by weekly points × rank multiplier. Revenue in, prizes out.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="fairplay">
+    <div class="section-head reveal">
+      <span class="sec-tag">/fair-play · 05</span>
+      <h2>Anti-cheat</h2>
+      <p>Payouts only mean something if the board is honest. Cheating costs you everything — permanently.</p>
+    </div>
+    <div class="fair-grid">
+      <div class="fair-card reveal"><b>Humanly-possible ranges</b><p>Every run is checked against human limits. Sub-90ms reaction averages, 230+ wpm bursts and machine-perfect aim are voided on the spot — you'll see "RUN VOIDED" instead of a score.</p></div>
+      <div class="fair-card reveal"><b>Pattern analysis</b><p>Input cadence, click intervals and run-to-run variance get profiled. Scripted play doesn't look like human play, and it shows fast.</p></div>
+      <div class="fair-card reveal"><b>Settlement sweep</b><p>Weekly prizes settle only after the ladder is swept. Flagged runs are pruned before a single cent of USDG moves.</p></div>
+      <div class="fair-card ban reveal"><b>Permanent bans</b><p>Confirmed cheaters are banned for good — wallet blacklisted from the leaderboard, payouts, and every future season. No appeals, no second wallets.</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="faq">
+    <div class="section-head center reveal">
+      <span class="sec-tag">/faq · 06</span>
+      <h2>FAQ</h2>
+      <p>Everything you're about to ask, answered.</p>
+    </div>
+    <div class="faq-list" id="faq-list"></div>
+  </section>
+</main>
+
+<footer class="footer">
+  <span class="brand-logo brand-logo-sm" id="footer-logo"></span>
+  <span>skillbased — the gaming arena on <span class="footer-chain"><img src="/robinhood-chain.png" alt="">Robinhood Chain</span>.</span>
+  <span class="sep">·</span>
+  <a class="footer-chain" href="https://ponslaunchpad.com" target="_blank" rel="noopener"><img src="/pons.png" alt="">$SKILL on PONS</a>
+</footer>
+
+<!-- Game view -->
+<div class="modal" id="modal" hidden>
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="modal-title"></h3>
+      <div class="modal-head-right">
+        <span class="modal-best" id="modal-best"></span>
+        <button class="modal-close" id="modal-close" aria-label="Close">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+
+<script type="module" src="/src/main.js"></script>
+</body>
+</html>
