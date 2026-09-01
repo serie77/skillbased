@@ -22,8 +22,8 @@ const from = () => encodeURIComponent(shortAddr() || 'a rival');
 export const typingLink = (seed, score, wpm) =>
   `${base()}?challenge=typing&seed=${seed}&score=${score}&wpm=${wpm}&from=${from()}`;
 
-export const chessLink = moves =>
-  `${base()}?match=chess&moves=${moves.join('.')}&from=${from()}`;
+export const chessInvite = peerId =>
+  `${base()}?match=chess&join=${encodeURIComponent(peerId)}&from=${from()}`;
 
 export function parseInvite() {
   const p = new URLSearchParams(location.search);
@@ -36,10 +36,10 @@ export function parseInvite() {
       from: p.get('from') || 'a rival',
     };
   }
-  if (p.get('match') === 'chess') {
+  if (p.get('match') === 'chess' && p.get('join')) {
     return {
       game: 'chess',
-      moves: (p.get('moves') || '').split('.').filter(Boolean),
+      join: p.get('join'),
       from: p.get('from') || 'a rival',
     };
   }

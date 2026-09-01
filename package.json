@@ -10,7 +10,8 @@
     "test:e2e": "node test/e2e.mjs"
   },
   "dependencies": {
-    "chess.js": "^1.0.0"
+    "chess.js": "^1.0.0",
+    "peerjs": "^1.5.5"
   },
   "devDependencies": {
     "puppeteer-core": "^25.9.0",

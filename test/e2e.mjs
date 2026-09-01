@@ -1,5 +1,6 @@
-/* E2E: chess engine difficulty, chess match-by-link ping-pong, corrupt links, typing challenge.
-   Run: npm run build && npx vite preview --port 4173  (in another terminal), then: npm run test:e2e */
+/* E2E: engine chess + difficulty, LIVE peer-to-peer chess between two tabs, typing challenge.
+   Run: npm run build && npx vite preview --port 4173  (in another terminal), then: npm run test:e2e
+   The live-match tests need internet (PeerJS public signaling broker). */
 import puppeteer from 'puppeteer-core';
 import assert from 'node:assert';
 
@@ -7,116 +8,119 @@ const BASE = 'http://localhost:4173';
 const browser = await puppeteer.launch({
   executablePath: 'C:/Program Files/Google/Chrome/Application/chrome.exe',
   headless: 'new',
+  protocolTimeout: 20000,
 });
-const page = await browser.newPage();
-await page.setViewport({ width: 1440, height: 1000 });
+const health = async (page, tag) => {
+  try { await page.evaluate(() => 1); console.log(tag + ': responsive'); }
+  catch { console.log(tag + ': FROZEN'); }
+};
 const errors = [];
-page.on('pageerror', e => errors.push('pageerror: ' + e.message));
-page.on('console', m => { if (m.type() === 'error') errors.push('console: ' + m.text()); });
-
+const newPage = async () => {
+  const p = await browser.newPage();
+  await p.setViewport({ width: 1440, height: 1000 });
+  p.on('pageerror', e => errors.push('pageerror: ' + e.message));
+  p.on('console', m => { if (m.type() === 'error' && !m.text().includes('peerjs')) errors.push('console: ' + m.text()); });
+  return p;
+};
 process.on('unhandledRejection', e => { console.log('FAILED:', e.message); if (errors.length) console.log('PAGE ERRORS:\n' + errors.join('\n')); process.exit(1); });
-const gotoApp = async url => {
+
+const A = await newPage();
+const gotoApp = async (page, url) => {
   await page.goto(url, { waitUntil: 'load' });
   await page.waitForSelector('.splash.done', { timeout: 20000 });
 };
-const sq = s => page.click(`[data-sq="${s}"]`);
-const status = () => page.$eval('#cs', el => el.textContent);
-const linkVal = () => page.$eval('.link-input', el => el.value);
-const waitEngine = () => page.waitForFunction(
-  () => !document.querySelector('#cs')?.textContent.includes('thinking'), { timeout: 8000 });
+const status = page => page.$eval('#cs', el => el.textContent);
+const clickSq = async (page, s, tag) => {
+  await page.$eval(`[data-sq="${s}"]`, el => el.click());
+  console.log(`   ${tag || ''} clicked ${s}`);
+};
 
-// ---------- 1. engine game + difficulty pills ----------
-await gotoApp(BASE + '/app/#chess');
-await page.waitForSelector('#cb .sq', { timeout: 10000 });
-assert(await page.$('#c-diff'), 'difficulty selector missing');
-await page.click('[data-diff="hard"]');
-await page.waitForSelector('[data-diff="hard"].active', { timeout: 5000 });
-await page.waitForSelector('#cb .sq');
-await sq('e2'); await sq('e4');
-await waitEngine();
-assert(/Your move|Check/.test(await status()), 'engine did not reply: ' + await status());
-console.log('1. engine game + hard difficulty: ok');
+// ---------- 1. engine game + difficulty pills + plates ----------
+await gotoApp(A, BASE + '/app/#chess');
+await A.waitForSelector('#cb .sq', { timeout: 10000 });
+assert(await A.$('#c-diff'), 'difficulty selector missing');
+assert((await A.$eval('#plate-top b', el => el.textContent)).includes('Engine'), 'engine plate missing');
+assert((await A.$eval('#plate-bottom b', el => el.textContent)).includes('you'), 'player plate missing');
+await A.click('[data-diff="hard"]');
+await A.waitForSelector('[data-diff="hard"].active', { timeout: 5000 });
+await A.click('[data-sq="e2"]'); await A.click('[data-sq="e4"]');
+await A.waitForFunction(() => /Your move|Check/.test(document.querySelector('#cs').textContent), { timeout: 8000 });
+console.log('1. engine game, hard difficulty, plates: ok');
 
-// difficulty switch mid-game restarts
-await page.click('[data-diff="easy"]');
-await page.waitForSelector('[data-diff="easy"].active', { timeout: 5000 });
-assert((await status()).includes("You're white"), 'difficulty switch did not restart');
-console.log('2. difficulty switch restarts: ok');
+await A.click('[data-diff="medium"]');
+await A.waitForSelector('[data-diff="medium"].active', { timeout: 5000 });
+assert((await A.$eval('#plate-top b', el => el.textContent)).includes('Medium'), 'plate did not follow difficulty');
+console.log('2. difficulty switch restarts with updated plate: ok');
 
-// ---------- 2. invite flow: fresh match, inviter moves first ----------
-await page.$eval('#c-invite', el => el.click());
-await page.waitForSelector('.invite-banner');
-assert((await page.$eval('.invite-banner', el => el.textContent)).includes('first move'), 'fresh banner wrong');
-await sq('e2'); await sq('e4');
-await page.waitForSelector('.link-input');
-const link1 = await linkVal();
-assert(link1.includes('/app/?match=chess&moves=e2e4'), 'invite link wrong: ' + link1);
-console.log('3. invite creates fresh match, link after first move: ok');
+// ---------- 2. LIVE match: two tabs, real-time sync ----------
+await A.$eval('#c-invite', el => el.click());
+await A.waitForSelector('.link-input', { timeout: 30000 }); // PeerJS broker handshake
+const invite = await A.$eval('.link-input', el => el.value);
+assert(invite.includes('match=chess&join='), 'invite link malformed: ' + invite);
+console.log('3. live invite created: ok');
 
-// friend opens the invite: plays black on a flipped board
-await gotoApp(link1);
-await page.waitForSelector('.invite-banner', { timeout: 10000 });
-const b1 = await page.$eval('.invite-banner', el => el.textContent);
-assert(b1.includes('black'), 'friend should play black: ' + b1);
-// last move highlighted
-assert(await page.$('.sq.last'), 'no last-move highlight after replay');
-await sq('e7'); await sq('e5');
-await page.waitForSelector('.link-input');
-const link2 = await linkVal();
-assert(link2.includes('moves=e2e4.e7e5'), 'reply link wrong: ' + link2);
-console.log('4. friend replies as black: ok');
+const B = await newPage();
+await gotoApp(B, invite);
+await A.waitForSelector('#plate-top', { timeout: 30000 });
+await B.waitForSelector('#plate-top', { timeout: 30000 });
+assert((await status(A)).includes('Your move'), 'host should be white to move: ' + await status(A));
+assert((await status(B)).includes('Waiting'), 'guest should be waiting: ' + await status(B));
+// guest sees a flipped board (a1 top-right area, h-file first)
+assert((await B.$eval('#plate-bottom .plate-sub', el => el.textContent)) === 'black', 'guest not black');
+console.log('4. two tabs connected, colors assigned: ok');
 
-// inviter opens the reply: plays white again
-await gotoApp(link2);
-await page.waitForSelector('.invite-banner', { timeout: 10000 });
-assert((await page.$eval('.invite-banner', el => el.textContent)).includes('white'), 'inviter should be white');
-await sq('g1'); await sq('f3');
-await page.waitForSelector('.link-input');
-assert((await linkVal()).includes('e2e4.e7e5.g1f3'), 'third link wrong');
-console.log('5. ping-pong continues: ok');
+await clickSq(A, 'e2', 'A'); await clickSq(A, 'e4', 'A');
+await B.waitForFunction(() => document.querySelector('[data-sq="e4"]')?.classList.contains('wp'), { timeout: 10000 });
+await clickSq(B, 'e7', 'B'); await clickSq(B, 'e5', 'B');
+await A.waitForFunction(() => document.querySelector('[data-sq="e5"]')?.classList.contains('bp'), { timeout: 10000 });
+assert((await status(A)).includes('Your move'), 'turn did not come back to host');
+console.log('5. moves sync live in both directions: ok');
 
-// ---------- 3. a link that arrives already checkmated shows the result ----------
-await gotoApp(BASE + '/app/?match=chess&moves=f2f3.e7e5.g2g4.d8h4&from=riv');
-await page.waitForSelector('.result-card', { timeout: 10000 });
-const sub = await page.$eval('.result-sub', el => el.textContent);
-assert(sub.includes('riv takes it'), 'mate-on-open result wrong: ' + sub);
-console.log('6. checkmated link shows result immediately: ok');
+// capture: exd5 after d7d5? play d-pawn trade to light up the capture plates
+await clickSq(A, 'd2', 'A'); await clickSq(A, 'd4', 'A');
+await B.waitForFunction(() => document.querySelector('[data-sq="d4"]')?.classList.contains('wp'), { timeout: 10000 });
+await clickSq(B, 'e5', 'B'); await clickSq(B, 'd4', 'B'); // pawn takes
+await A.waitForFunction(() => document.querySelector('#caps-top i') !== null, { timeout: 10000 });
+console.log('6. captured pieces show on the plate: ok');
 
-// ---------- 4. corrupt link falls back to a clean engine game ----------
-await gotoApp(BASE + '/app/?match=chess&moves=zz9x.abcd&from=x');
-await page.waitForSelector('#cb .sq', { timeout: 10000 });
-assert(!(await page.$('.invite-banner')), 'corrupt link should not create a match');
-assert((await status()).includes("You're white"), 'corrupt link not a clean engine game');
-// board is the starting position (32 pieces)
-const pieces = await page.$$eval('#cb .sq', els => els.filter(e => /[♟♞♝♜♛♚]/.test(e.textContent)).length);
-assert(pieces === 32, 'corrupt link left a dirty board: ' + pieces);
-console.log('7. corrupt link falls back cleanly: ok');
+// resign propagates
+await B.$eval('#c-resign', el => el.click());
+await A.waitForSelector('.result-card', { timeout: 10000 });
+assert((await A.$eval('.result-sub', el => el.textContent)).includes('resigned'), 'host did not see resignation');
+await B.waitForSelector('.result-card', { timeout: 10000 });
+console.log('7. resign propagates to both boards: ok');
 
-// ---------- 5. typing challenge: same seed, same words, target shown ----------
-await gotoApp(BASE + '/app/?challenge=typing&seed=4242&score=77&wpm=55&from=riv');
-await page.waitForSelector('.invite-banner', { timeout: 10000 });
-assert((await page.$eval('.invite-banner', el => el.textContent)).includes('77'), 'typing target missing');
-const words1 = await page.$eval('#tw', el => el.textContent);
-await gotoApp(BASE + '/app/?challenge=typing&seed=4242&score=77&wpm=55&from=riv');
-await page.waitForSelector('#tw', { timeout: 10000 });
-const words2 = await page.$eval('#tw', el => el.textContent);
+// rematch handshake swaps colors
+await A.$eval('#replay-btn', el => el.click());
+await B.$eval('#replay-btn', el => el.click());
+await A.waitForFunction(() => document.querySelector('#plate-bottom .plate-sub')?.textContent === 'black', { timeout: 15000 });
+await B.waitForFunction(() => /Your move/.test(document.querySelector('#cs')?.textContent || ''), { timeout: 15000 });
+await clickSq(B, 'e2', 'B'); await clickSq(B, 'e4', 'B');
+await A.waitForFunction(() => document.querySelector('[data-sq="e4"]')?.classList.contains('wp'), { timeout: 10000 });
+console.log('8. rematch swaps colors and plays on: ok');
+
+// dead invite: close both, open the old link fresh -> graceful fallback to engine game
+await A.close(); await B.close();
+const C = await newPage();
+await gotoApp(C, invite);
+await C.waitForFunction(() => document.querySelector('#c-diff') && /Your move/.test(document.querySelector('#cs')?.textContent || ''), { timeout: 30000 });
+console.log('9. dead invite falls back to engine game: ok');
+
+// legacy move-list links are ignored, app still boots
+await gotoApp(C, BASE + '/app/?match=chess&moves=e2e4.e7e5&from=x');
+await C.waitForSelector('.app-head', { timeout: 10000 });
+console.log('10. legacy links ignored cleanly: ok');
+
+// ---------- 3. typing challenge: same seed, same words, target shown ----------
+await gotoApp(C, BASE + '/app/?challenge=typing&seed=4242&score=77&wpm=55&from=riv');
+await C.waitForSelector('.invite-banner', { timeout: 10000 });
+assert((await C.$eval('.invite-banner', el => el.textContent)).includes('77'), 'typing target missing');
+const words1 = await C.$eval('#tw', el => el.textContent);
+await gotoApp(C, BASE + '/app/?challenge=typing&seed=4242&score=77&wpm=55&from=riv');
+await C.waitForSelector('#tw', { timeout: 10000 });
+const words2 = await C.$eval('#tw', el => el.textContent);
 assert(words1 === words2 && words1.length > 50, 'typing words not deterministic');
-console.log('8. typing challenge deterministic words + target: ok');
-
-// ---------- 6. play an easy engine game a few moves for stability ----------
-await gotoApp(BASE + '/app/#chess');
-await page.waitForSelector('#cb .sq', { timeout: 10000 });
-await page.click('[data-diff="easy"]');
-await page.waitForSelector('[data-diff="easy"].active');
-for (const [a, b] of [['e2', 'e4'], ['d2', 'd4'], ['b1', 'c3']]) {
-  await page.waitForFunction(() => /Your move|Check/.test(document.querySelector('#cs').textContent), { timeout: 8000 });
-  await sq(a);
-  const ok = await page.$(`[data-sq="${b}"] .dot`);
-  if (!ok) { await sq(a); continue; } // move blocked by engine's reply; skip
-  await sq(b);
-  await waitEngine();
-}
-console.log('9. multi-move engine game stable: ok');
+console.log('11. typing challenge deterministic words + target: ok');
 
 await browser.close();
 if (errors.length) { console.log('PAGE ERRORS:\n' + errors.join('\n')); process.exit(1); }

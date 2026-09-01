@@ -224,7 +224,7 @@ const FAQ = [
   ['How do ranks work?',
    'Lifetime points place you in a tier: Bronze (0+), Silver (500+), Gold (1,500+), Platinum (3,500+), Diamond (7,500+), Master (15,000+). Each tier carries a payout multiplier from 1.0x up to 3.0x, applied to your weekly points at settlement. Lifetime points never reset, so rank only goes up.'],
   ['Can I play against friends?',
-   'Yes. <b>Typing Test</b> and <b>Chess</b> both support invite links. After a typing run, copy the challenge link: your rival gets the exact same words and a target to beat. In chess, hit <b>Invite a friend</b>: you make the first move as white, then send the link. Each move generates a reply link you send back and forth until someone gets mated. Friendly chess matches score no points.'],
+   'Yes. In chess, hit <b>Play a friend live</b> and send the invite link: the moment they open it you are connected peer-to-peer and moves sync in real time, with rematches swapping colors. Keep your board open until they join. In <b>Typing Test</b>, the challenge link gives your rival the exact same words and a target to beat. Friendly chess matches score no points.'],
   ['What stops people from cheating?',
    'Every run is checked against human limits. Reaction averages under 90ms, aim under 120ms per target and typing over 230 wpm are voided instantly and bank nothing. Flagged runs are pruned before weekly settlement, and confirmed cheaters are wallet-banned from the board and all future payouts.'],
 ];

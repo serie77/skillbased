@@ -750,6 +750,26 @@ section { scroll-margin-top: 72px; }
 .theme-swatch:hover { transform: scale(1.18); }
 .theme-swatch.active { border-color: var(--acc); box-shadow: 0 0 10px rgba(22,163,74,.4); }
 
+/* player plates (chess.com style) */
+.plate {
+  display: flex; align-items: center; gap: 12px; width: 100%;
+  max-width: min(92vw, calc(clamp(44px, 8.6vh, 76px) * 8));
+  padding: 8px 12px; border-radius: 12px;
+  background: var(--card); border: 1px solid var(--border);
+}
+.plate-avatar { font-size: 30px; line-height: 0; }
+.plate-avatar svg { display: block; border-radius: 6px; background: var(--bg2); padding: 3px; }
+.plate-info { display: flex; flex-direction: column; line-height: 1.25; text-align: left; }
+.plate-info b { font-size: 13.5px; }
+.plate-sub { font-family: var(--font-mono); font-size: 10.5px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.plate-caps { margin-left: auto; display: flex; align-items: center; gap: 1px; font-size: 15px; line-height: 1; }
+.plate-caps i { font-style: normal; }
+.plate-caps .cw { color: var(--text); opacity: .85; }
+.plate-caps .cb { color: var(--muted); }
+.plate-caps b { font-family: var(--font-mono); font-size: 11.5px; color: var(--acc); margin-left: 5px; }
+.turn-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px rgba(34,197,94,.7); flex: none; margin-left: 10px; }
+.plate-caps:empty + .turn-dot { margin-left: auto; }
+
 /* number memory */
 .num-input {
   font-family: var(--font-mono); font-size: 26px; text-align: center; letter-spacing: 4px;
