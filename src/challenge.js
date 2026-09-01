@@ -16,7 +16,7 @@ export function seededWords(seed, n = 90) {
   return Array.from({ length: n }, () => WORDS[Math.floor(r() * WORDS.length)]);
 }
 
-const base = () => location.origin + location.pathname;
+const base = () => location.origin + '/app/';
 const from = () => encodeURIComponent(shortAddr() || 'a rival');
 
 export const typingLink = (seed, score, wpm) =>

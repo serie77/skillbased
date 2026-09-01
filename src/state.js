@@ -9,17 +9,6 @@ export const RANKS = [
   { name: 'Master',   min: 15000, mult: '3.0x', color: '#0a5c36' },
 ];
 
-export const BOTS = [
-  { name: 'hoodmaxi',      pts: 18420 },
-  { name: '0xJune',        pts: 12980 },
-  { name: 'clipzone',      pts: 9340 },
-  { name: 'wickhunter',    pts: 6210 },
-  { name: 'fadegod',       pts: 4470 },
-  { name: 'tapewatcher',   pts: 2890 },
-  { name: 'sizequeen.eth', pts: 1660 },
-  { name: 'chartmonk',     pts: 940 },
-  { name: 'paperhands',    pts: 310 },
-];
 
 export const state = {
   wallet: null,

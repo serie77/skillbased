@@ -1,11 +1,8 @@
 /* skillbased - UI: rendering, animations, modal, toasts, wallet button, FAQ */
-import { state, RANKS, BOTS, DAILIES, DAILY_MAX, GAME_CAPS, dailyStats, weeklyStats, rankFor, nextRank, shortAddr, award, setWallet } from './state.js';
+import { state, RANKS, DAILIES, DAILY_MAX, GAME_CAPS, dailyStats, weeklyStats, rankFor, nextRank, shortAddr, award, setWallet } from './state.js';
 import { GAME_ICONS, rankIcon } from './icons.js';
 
 const $ = id => document.getElementById(id);
-
-/* $SKILL contract address. Empty until launch. */
-export const CONTRACT_ADDRESS = '';
 
 /* ---------- toasts ---------- */
 export function toast(html) {
@@ -104,6 +101,7 @@ export function renderAll() {
 
   countUp($('nav-points-value'), state.points);
   countUp($('stat-points'), state.points);
+  countUp($('stat-week'), weeklyStats().pts);
   $('nav-rank-dot').style.background = rank.color;
   $('nav-rank-dot').style.color = rank.color;
   $('stat-rank').textContent = state.wallet ? rank.name : '–';
@@ -125,7 +123,6 @@ export function renderAll() {
     btn.title = '';
   }
 
-  renderLeaderboard();
   renderGames();
   renderRanks();
   renderRankProgress();
@@ -162,28 +159,6 @@ function renderDailies() {
     ${state.wallet ? '' : '<div class="dailies-note">Connect your wallet to earn daily rewards.</div>'}`;
 }
 
-function renderLeaderboard() {
-  const entries = [...BOTS];
-  if (state.wallet) entries.push({ name: shortAddr(), pts: state.points, you: true });
-  const rows = entries.sort((a, b) => b.pts - a.pts);
-  const youPos = rows.findIndex(r => r.you) + 1;
-
-  $('lb-list').innerHTML = rows.slice(0, 8).map((r, i) => {
-    const rank = rankFor(r.pts);
-    return `<li class="lb-row${r.you ? ' is-you' : ''}"${r.you ? '' : ' title="Mock ranking, seeded until enough players are climbing the board"'} style="animation-delay:${i * 60}ms">
-      <span class="lb-pos">#${i + 1}</span>
-      <span class="lb-name">${r.name}${r.you ? ' (you)' : ''}</span>
-      <span class="lb-rankicon" data-rank="${rank.name}">${rankIcon(rank)}</span>
-      <span class="lb-pts">${r.pts.toLocaleString()}</span>
-    </li>`;
-  }).join('');
-
-  $('lb-you').textContent = !state.wallet
-    ? 'Connect your wallet to join the board and save your scores.'
-    : youPos && youPos <= 8 ? "You're on the board. Keep climbing."
-    : `You're #${youPos}. Play daily to break into the top 8.`;
-}
-
 function renderGames() {
   $('games-grid').innerHTML = state.games.map((g, i) => `
     <button class="game-card reveal" data-game="${g.id}" style="transition-delay:${(i % 3) * 80}ms">
@@ -192,13 +167,13 @@ function renderGames() {
       <p>${g.desc}</p>
       <div class="game-meta">
         <span class="game-skill">${g.skill}</span>
-        <span class="game-best">${state.best[g.id] ? 'best +' + state.best[g.id] : state.wallet ? 'not played' : 'login to save'}</span>
+        <span class="game-best">${state.best[g.id] ? 'best +' + state.best[g.id] : state.wallet ? 'not played' : 'guest · not saving'}</span>
       </div>
     </button>`).join('');
   observeReveals();
 }
 
-function renderRanks() {
+export function renderRanks() {
   const current = state.wallet ? rankFor(state.points) : null;
   $('ranks-row').innerHTML = RANKS.map((r, i) => `
     <div class="rank-card reveal${r === current ? ' current' : ''}" style="transition-delay:${i * 60}ms">
@@ -277,7 +252,8 @@ export function observeReveals() {
 
 /* ---------- hero particles + card spotlight ---------- */
 export function decorate() {
-  $('hero-pixels').innerHTML = Array.from({ length: 16 }, () => {
+  const hp = $('hero-pixels');
+  if (hp) hp.innerHTML = Array.from({ length: 16 }, () => {
     const left = Math.random() * 100, dur = 14 + Math.random() * 18, delay = -Math.random() * 30;
     return `<i style="left:${left}%;animation-duration:${dur}s;animation-delay:${delay}s"></i>`;
   }).join('');
@@ -380,21 +356,6 @@ export function wire() {
   $('modal-close').addEventListener('click', closeGame);
   $('modal-back').addEventListener('click', closeGame);
 
-  // dark mode
-  $('theme-toggle').addEventListener('click', () => {
-    const dark = document.documentElement.dataset.theme !== 'dark';
-    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
-    try { localStorage.setItem('sb_theme', dark ? 'dark' : 'light'); } catch {}
-  });
-
-  // contract address pill: copies when an address is set
-  $('ca-addr').textContent = CONTRACT_ADDRESS;
-  $('ca-pill').addEventListener('click', () => {
-    if (!CONTRACT_ADDRESS) return toast('Contract address drops at launch.');
-    navigator.clipboard?.writeText(CONTRACT_ADDRESS)
-      .then(() => toast('Contract address copied.'))
-      .catch(() => {});
-  });
   $('modal').addEventListener('click', e => { if (e.target.id === 'modal') closeGame(); });
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && !$('modal').hidden) closeGame();
